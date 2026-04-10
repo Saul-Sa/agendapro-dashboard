@@ -9,18 +9,18 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #0d0f1a;
-      --surface:  #151829;
-      --card:     #1c2035;
-      --border:   #252a42;
-      --text:     #e2e8f0;
-      --muted:    #8892a4;
-      --accent:   #7c6af7;
-      --green:    #34d399;
-      --red:      #f87171;
-      --orange:   #fb923c;
-      --blue:     #60a5fa;
-      --yellow:   #fbbf24;
+      --bg:      #0d0f1a;
+      --surface: #151829;
+      --card:    #1c2035;
+      --border:  #252a42;
+      --text:    #e2e8f0;
+      --muted:   #8892a4;
+      --accent:  #7c6af7;
+      --green:   #34d399;
+      --red:     #f87171;
+      --orange:  #fb923c;
+      --blue:    #60a5fa;
+      --yellow:  #fbbf24;
     }
 
     body {
@@ -47,17 +47,9 @@
     .brand h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -.02em; }
     .brand span { color: var(--accent); }
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
+    .header-right { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
 
-    #last-updated {
-      font-size: .78rem;
-      color: var(--muted);
-    }
+    #last-updated { font-size: .78rem; color: var(--muted); }
 
     #status-dot {
       display: inline-block;
@@ -70,10 +62,7 @@
     #status-dot.loading { background: var(--yellow); animation: pulse 1s infinite; }
     #status-dot.error   { background: var(--red); }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: .3; }
-    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
 
     button#btn-refresh {
       background: var(--accent);
@@ -89,21 +78,77 @@
       gap: .4rem;
       transition: opacity .2s;
     }
-    button#btn-refresh:hover  { opacity: .85; }
-    button#btn-refresh:active { opacity: .7; }
+    button#btn-refresh:hover   { opacity: .85; }
+    button#btn-refresh:active  { opacity: .7;  }
     button#btn-refresh:disabled { opacity: .5; cursor: not-allowed; }
 
-    /* ── Main ── */
-    main {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 1.5rem 1.5rem 3rem;
+    button#btn-import {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .5rem 1rem;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      transition: all .2s;
     }
+    button#btn-import:hover { border-color: var(--accent); color: var(--text); }
+
+    #import-result {
+      font-size: .78rem;
+      padding: .3rem .7rem;
+      border-radius: 6px;
+      display: none;
+    }
+    #import-result.ok  { background: rgba(52,211,153,.12); color: var(--green); }
+    #import-result.err { background: rgba(248,113,113,.12); color: var(--red);  }
+
+    /* ── Month selector ── */
+    .month-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: .6rem 1.5rem;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .month-bar::-webkit-scrollbar { height: 4px; }
+    .month-bar::-webkit-scrollbar-track { background: transparent; }
+    .month-bar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .month-pill {
+      display: inline-block;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: .3rem .85rem;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      margin-right: .4rem;
+      transition: all .15s;
+      user-select: none;
+    }
+    .month-pill:hover  { border-color: var(--accent); color: var(--text); }
+    .month-pill.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Main ── */
+    main { max-width: 1400px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
 
     /* ── KPI cards ── */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 1rem;
       margin-bottom: 1.5rem;
     }
@@ -116,7 +161,6 @@
       position: relative;
       overflow: hidden;
     }
-
     .kpi::before {
       content: '';
       position: absolute;
@@ -125,10 +169,11 @@
       border-radius: 14px 14px 0 0;
     }
     .kpi.accent::before  { background: var(--accent); }
-    .kpi.green::before   { background: var(--green); }
-    .kpi.red::before     { background: var(--red); }
-    .kpi.blue::before    { background: var(--blue); }
+    .kpi.green::before   { background: var(--green);  }
+    .kpi.red::before     { background: var(--red);    }
+    .kpi.blue::before    { background: var(--blue);   }
     .kpi.orange::before  { background: var(--orange); }
+    .kpi.yellow::before  { background: var(--yellow); }
 
     .kpi-label {
       font-size: .75rem;
@@ -138,7 +183,6 @@
       color: var(--muted);
       margin-bottom: .5rem;
     }
-
     .kpi-value {
       font-size: 2rem;
       font-weight: 800;
@@ -146,23 +190,16 @@
       letter-spacing: -.03em;
     }
     .kpi.accent .kpi-value  { color: var(--accent); }
-    .kpi.green .kpi-value   { color: var(--green); }
-    .kpi.red .kpi-value     { color: var(--red); }
-    .kpi.blue .kpi-value    { color: var(--blue); }
+    .kpi.green  .kpi-value  { color: var(--green);  }
+    .kpi.red    .kpi-value  { color: var(--red);    }
+    .kpi.blue   .kpi-value  { color: var(--blue);   }
     .kpi.orange .kpi-value  { color: var(--orange); }
+    .kpi.yellow .kpi-value  { color: var(--yellow); }
 
-    .kpi-sub {
-      font-size: .75rem;
-      color: var(--muted);
-      margin-top: .35rem;
-    }
+    .kpi-sub { font-size: .75rem; color: var(--muted); margin-top: .35rem; }
 
     /* ── Chart grid ── */
-    .chart-grid {
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: 1fr 1fr;
-    }
+    .chart-grid { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
 
     .chart-card {
       background: var(--card);
@@ -170,9 +207,7 @@
       border-radius: 14px;
       padding: 1.25rem 1.5rem;
     }
-
-    .chart-card.wide  { grid-column: 1 / -1; }
-    .chart-card.third { grid-column: span 1; }
+    .chart-card.wide { grid-column: 1 / -1; }
 
     .chart-title {
       font-size: .85rem;
@@ -183,19 +218,11 @@
       margin-bottom: 1rem;
     }
 
-    .chart-wrap {
-      position: relative;
-      height: 220px;
-    }
-    .chart-wrap.tall  { height: 280px; }
-    .chart-wrap.short { height: 180px; }
+    .chart-wrap          { position: relative; height: 220px; }
+    .chart-wrap.tall     { height: 280px; }
 
-    /* ── Selector tabs ── */
-    .tab-group {
-      display: flex;
-      gap: .4rem;
-      margin-bottom: 1rem;
-    }
+    /* ── Tab group ── */
+    .tab-group { display: flex; gap: .4rem; margin-bottom: 1rem; }
     .tab {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -207,11 +234,7 @@
       cursor: pointer;
       transition: all .15s;
     }
-    .tab.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
+    .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
     /* ── Services list ── */
     .service-row {
@@ -222,9 +245,9 @@
       border-bottom: 1px solid var(--border);
     }
     .service-row:last-child { border-bottom: none; }
-    .service-name { flex: 1; font-size: .85rem; }
+    .service-name  { flex: 1; font-size: .85rem; }
     .service-bar-wrap { width: 100px; background: var(--border); border-radius: 4px; height: 6px; }
-    .service-bar { height: 6px; border-radius: 4px; background: var(--accent); }
+    .service-bar   { height: 6px; border-radius: 4px; background: var(--accent); }
     .service-count { font-size: .8rem; color: var(--muted); min-width: 28px; text-align: right; }
 
     /* ── Loading overlay ── */
@@ -267,8 +290,7 @@
     /* ── Responsive ── */
     @media (max-width: 768px) {
       .chart-grid { grid-template-columns: 1fr; }
-      .chart-card.wide,
-      .chart-card.third { grid-column: span 1; }
+      .chart-card.wide { grid-column: span 1; }
       header { padding: 1rem; }
       main   { padding: 1rem; }
     }
@@ -279,7 +301,7 @@
 <!-- Loading -->
 <div id="loading">
   <div class="spinner"></div>
-  <span>Cargando datos de AgendaPro...</span>
+  <span id="loading-text">Cargando datos de AgendaPro...</span>
 </div>
 
 <!-- Header -->
@@ -289,15 +311,24 @@
       <rect width="32" height="32" rx="8" fill="#7c6af7"/>
       <rect x="8" y="10" width="16" height="2" rx="1" fill="white"/>
       <rect x="8" y="15" width="12" height="2" rx="1" fill="white"/>
-      <rect x="8" y="20" width="9" height="2" rx="1" fill="white"/>
+      <rect x="8" y="20" width="9"  height="2" rx="1" fill="white"/>
     </svg>
     <h1>Agenda<span>Pro</span> Dashboard</h1>
   </div>
   <div class="header-right">
     <span id="last-updated">
-      <span id="status-dot" class="loading"></span>
-      Cargando...
+      <span id="status-dot" class="loading"></span>Cargando...
     </span>
+    <button id="btn-import" onclick="document.getElementById('file-input').click()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
+      Importar CSV/Excel
+    </button>
+    <input id="file-input" type="file" accept=".csv,.xlsx,.xls" style="display:none" onchange="importFile(this)">
+    <span id="import-result"></span>
     <button id="btn-refresh" onclick="manualRefresh()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <polyline points="23 4 23 10 17 10"></polyline>
@@ -308,49 +339,55 @@
   </div>
 </header>
 
+<!-- Month selector -->
+<div class="month-bar" id="month-bar"></div>
+
 <main>
-  <!-- Error -->
   <div id="error-banner"></div>
 
   <!-- KPIs -->
   <div class="kpi-grid">
     <div class="kpi accent">
-      <div class="kpi-label">Total citas (6 meses)</div>
+      <div class="kpi-label" id="kpi-total-label">Total citas</div>
       <div class="kpi-value" id="kpi-total">—</div>
-      <div class="kpi-sub">últimos 6 meses</div>
+      <div class="kpi-sub" id="kpi-period">—</div>
     </div>
     <div class="kpi green">
-      <div class="kpi-label">Citas este mes</div>
-      <div class="kpi-value" id="kpi-month">—</div>
-      <div class="kpi-sub" id="kpi-month-sub">—</div>
+      <div class="kpi-label">Asistidas</div>
+      <div class="kpi-value" id="kpi-attended">—</div>
+      <div class="kpi-sub" id="kpi-attendance-sub">—</div>
     </div>
-    <div class="kpi blue">
-      <div class="kpi-label">Tasa de asistencia</div>
-      <div class="kpi-value" id="kpi-attendance">—</div>
-      <div class="kpi-sub">citas atendidas</div>
+    <div class="kpi yellow">
+      <div class="kpi-label">Pendientes</div>
+      <div class="kpi-value" id="kpi-pending">—</div>
+      <div class="kpi-sub">reservadas / confirmadas</div>
     </div>
     <div class="kpi red">
       <div class="kpi-label">Canceladas</div>
       <div class="kpi-value" id="kpi-cancelled">—</div>
-      <div class="kpi-sub">últimos 6 meses</div>
+      <div class="kpi-sub">del período</div>
     </div>
     <div class="kpi orange">
       <div class="kpi-label">No asistieron</div>
       <div class="kpi-value" id="kpi-noshow">—</div>
-      <div class="kpi-sub">últimos 6 meses</div>
+      <div class="kpi-sub">del período</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label">Tasa asistencia</div>
+      <div class="kpi-value" id="kpi-attendance">—</div>
+      <div class="kpi-sub">sobre citas resueltas</div>
     </div>
   </div>
 
   <!-- Charts -->
   <div class="chart-grid">
 
-    <!-- Citas en el tiempo (day / week / month tabs) -->
+    <!-- Citas en el tiempo -->
     <div class="chart-card wide">
       <div class="chart-title">Citas en el tiempo</div>
       <div class="tab-group">
-        <button class="tab active" onclick="switchTab('day', this)">Por día</button>
-        <button class="tab" onclick="switchTab('week', this)">Por semana</button>
-        <button class="tab" onclick="switchTab('month', this)">Por mes</button>
+        <button class="tab active" onclick="switchTab('day',  this)">Por día</button>
+        <button class="tab"        onclick="switchTab('week', this)">Por semana</button>
       </div>
       <div class="chart-wrap tall">
         <canvas id="chart-time"></canvas>
@@ -373,7 +410,15 @@
       </div>
     </div>
 
-    <!-- Servicios más solicitados -->
+    <!-- Citas creadas por día -->
+    <div class="chart-card wide">
+      <div class="chart-title">Citas creadas por día (fecha de creación)</div>
+      <div class="chart-wrap tall">
+        <canvas id="chart-creation"></canvas>
+      </div>
+    </div>
+
+    <!-- Servicios -->
     <div class="chart-card wide">
       <div class="chart-title">Servicios más solicitados</div>
       <div id="services-list"></div>
@@ -383,8 +428,7 @@
 </main>
 
 <script>
-  // ── Chart defaults ─────────────────────────────────────────────────────
-  Chart.defaults.color = '#8892a4';
+  Chart.defaults.color      = '#8892a4';
   Chart.defaults.borderColor = '#252a42';
   Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
 
@@ -398,68 +442,157 @@
     muted:   '#8892a4',
   };
 
-  // ── State ──────────────────────────────────────────────────────────────
-  let timeMode = 'day';
-  let statsData = null;
-  let charts = {};
+  // ── Estado ─────────────────────────────────────────────────────────────
+  let timeMode     = 'day';
+  let statsData    = null;
+  let charts       = {};
+  let selectedYear, selectedMonth;
 
-  // ── Fetch stats ────────────────────────────────────────────────────────
-  async function loadStats() {
+  // ── Selector de meses ──────────────────────────────────────────────────
+  function buildMonthSelector() {
+    const bar  = document.getElementById('month-bar');
+    const now  = new Date();
+    const frag = document.createDocumentFragment();
+
+    // Últimos 12 meses + mes actual (13 pills, más reciente a la derecha)
+    for (let i = 12; i >= 0; i--) {
+      const d     = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const year  = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const label = d.toLocaleDateString('es-CL', { month: 'short', year: 'numeric' });
+
+      const pill = document.createElement('span');
+      pill.className   = 'month-pill' + (i === 0 ? ' active' : '');
+      pill.textContent = label;
+      pill.dataset.year  = year;
+      pill.dataset.month = month;
+      pill.addEventListener('click', () => selectMonth(year, month, pill));
+      frag.appendChild(pill);
+    }
+
+    bar.appendChild(frag);
+
+    // Scroll al final (mes actual)
+    bar.scrollLeft = bar.scrollWidth;
+  }
+
+  function selectMonth(year, month, pill) {
+    if (year === selectedYear && month === selectedMonth) return;
+
+    document.querySelectorAll('.month-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+
+    selectedYear  = year;
+    selectedMonth = month;
+    loadStats(year, month);
+  }
+
+  // ── Sync status ────────────────────────────────────────────────────────
+  let syncPollTimer = null;
+
+  async function checkSyncThenLoad() {
+    const status = await fetch('/api/sync-status').then(r => r.json());
+
+    if (status.running) {
+      const phase = status.phase === 'full' ? 'Carga inicial' : 'Actualizando';
+      const pct   = status.total > 0 ? Math.round(status.done / status.total * 100) : 0;
+      document.getElementById('loading-text').textContent =
+        `${phase}: ${status.progress || '...'} — ${status.done}/${status.total} meses (${pct}%) · ${status.dbTotal} bookings en DB`;
+      document.getElementById('loading').classList.remove('hidden');
+      syncPollTimer = setTimeout(checkSyncThenLoad, 2000);
+    } else {
+      clearTimeout(syncPollTimer);
+      document.getElementById('loading').classList.add('hidden');
+      loadStats(selectedYear, selectedMonth);
+    }
+  }
+
+  // ── Fetch stats (desde SQLite, instantáneo) ────────────────────────────
+  async function loadStats(year, month) {
     try {
-      const res = await fetch('/api/stats');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const { stats, lastUpdated } = await res.json();
-      statsData = stats;
-      render(stats, lastUpdated);
+      const res = await fetch(`/api/stats?year=${year}&month=${month}`);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      const payload = await res.json();
+      statsData = payload.stats;
+      render(payload);
       showError(null);
     } catch (err) {
-      showError('No se pudo conectar con el servidor: ' + err.message);
-    } finally {
+      showError('Error al cargar datos: ' + err.message);
+    }
+  }
+
+  async function importFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    input.value = ''; // reset para permitir reimportar el mismo archivo
+
+    const result = document.getElementById('import-result');
+    const btn    = document.getElementById('btn-import');
+    btn.disabled = true;
+    result.className = ''; result.style.display = 'none';
+
+    document.getElementById('loading-text').textContent = `Importando ${file.name}…`;
+    document.getElementById('loading').classList.remove('hidden');
+
+    const form = new FormData();
+    form.append('file', file);
+
+    try {
+      const res  = await fetch('/api/import', { method: 'POST', body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+      result.textContent = `✓ ${data.saved.toLocaleString('es-CL')} registros importados (${data.dbTotal.toLocaleString('es-CL')} en DB)`;
+      result.className   = 'ok';
+      result.style.display = 'inline-block';
+      await checkSyncThenLoad(); // recarga el dashboard con los nuevos datos
+    } catch (err) {
+      result.textContent = `✗ ${err.message}`;
+      result.className   = 'err';
+      result.style.display = 'inline-block';
       document.getElementById('loading').classList.add('hidden');
+    } finally {
+      btn.disabled = false;
     }
   }
 
   async function manualRefresh() {
     const btn = document.getElementById('btn-refresh');
     btn.disabled = true;
-    setStatus('loading');
+    document.getElementById('loading-text').textContent = 'Sincronizando últimos 7 días…';
+    document.getElementById('loading').classList.remove('hidden');
     await fetch('/api/refresh', { method: 'POST' });
-    // Esperar ~2s y recargar stats
-    setTimeout(async () => {
-      await loadStats();
-      btn.disabled = false;
-    }, 2000);
+    checkSyncThenLoad().then(() => { btn.disabled = false; });
   }
 
   // ── Render ─────────────────────────────────────────────────────────────
-  function render(s, lastUpdated) {
+  function render({ stats: s, year, month, fetchedAt }) {
+    const d          = new Date(year, month - 1, 1);
+    const periodName = d.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' });
+
     // KPIs
-    document.getElementById('kpi-total').textContent = s.total.toLocaleString('es-CL');
-    document.getElementById('kpi-month').textContent = s.thisMonth.toLocaleString('es-CL');
-    document.getElementById('kpi-month-sub').textContent =
-      new Date().toLocaleDateString('es-CL', { month: 'long', year: 'numeric' });
-    document.getElementById('kpi-attendance').textContent = s.attendanceRate + '%';
-    document.getElementById('kpi-cancelled').textContent =
-      s.status.cancelled.toLocaleString('es-CL');
-    document.getElementById('kpi-noshow').textContent =
-      s.status.no_show.toLocaleString('es-CL');
+    const st = s.status || {};
+    document.getElementById('kpi-period').textContent     = periodName;
+    document.getElementById('kpi-total').textContent      = (s.total ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-attended').textContent   = (st.attended  ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-attendance-sub').textContent = (s.attendanceRate ?? 0) + '% de asistencia';
+    document.getElementById('kpi-pending').textContent    = (st.pending   ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-cancelled').textContent  = (st.cancelled ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-noshow').textContent     = (st.no_show   ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-attendance').textContent = (s.attendanceRate ?? 0) + '%';
 
-    // Last updated
-    const dot = document.getElementById('status-dot');
-    dot.className = '';
+    // Timestamp
     document.getElementById('last-updated').innerHTML =
-      `<span id="status-dot"></span>Actualizado: ${new Date(lastUpdated).toLocaleString('es-CL')}`;
+      `<span id="status-dot"></span>Actualizado: ${new Date(fetchedAt).toLocaleString('es-CL')}`;
 
-    // Charts
     renderTimeChart(s);
     renderStatusChart(s.status);
     renderClientsChart(s.clients);
+    renderCreationChart(s.byCreation);
     renderServices(s.services);
-  }
-
-  function setStatus(state) {
-    const dot = document.getElementById('status-dot');
-    if (dot) dot.className = state;
   }
 
   function showError(msg) {
@@ -477,9 +610,7 @@
   }
 
   function renderTimeChart(s) {
-    const map = { day: s.byDay, week: s.byWeek, month: s.byMonth };
-    const { labels, data } = map[timeMode];
-
+    const { labels, data } = timeMode === 'day' ? s.byDay : s.byWeek;
     if (charts.time) charts.time.destroy();
 
     charts.time = new Chart(document.getElementById('chart-time'), {
@@ -490,10 +621,10 @@
           label: 'Citas',
           data,
           backgroundColor: COLORS.accent + 'cc',
-          borderColor: COLORS.accent,
-          borderWidth: 1,
-          borderRadius: 6,
-          borderSkipped: false,
+          borderColor:     COLORS.accent,
+          borderWidth:     1,
+          borderRadius:    6,
+          borderSkipped:   false,
         }],
       },
       options: {
@@ -515,15 +646,16 @@
   function renderStatusChart(status) {
     if (charts.status) charts.status.destroy();
 
-    const labels   = ['Asistidas', 'Canceladas', 'No asistieron', 'Otras'];
-    const data     = [status.attended, status.cancelled, status.no_show, status.other];
-    const colors   = [COLORS.green, COLORS.red, COLORS.orange, COLORS.muted];
-
     charts.status = new Chart(document.getElementById('chart-status'), {
       type: 'doughnut',
       data: {
-        labels,
-        datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#1c2035' }],
+        labels: ['Asistidas', 'Pendientes', 'Canceladas', 'No asistieron', 'Otras'],
+        datasets: [{
+          data: [status.attended, status.pending, status.cancelled, status.no_show, status.other],
+          backgroundColor: [COLORS.green, COLORS.yellow, COLORS.red, COLORS.orange, COLORS.muted],
+          borderWidth: 2,
+          borderColor: '#1c2035',
+        }],
       },
       options: {
         responsive: true,
@@ -536,9 +668,11 @@
           },
           tooltip: {
             callbacks: {
-              label: ctx => ` ${ctx.label}: ${ctx.raw} (${
-                Math.round(ctx.raw / ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0) * 100)
-              }%)`,
+              label: ctx => {
+                const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                const pct   = total > 0 ? Math.round(ctx.raw / total * 100) : 0;
+                return ` ${ctx.label}: ${ctx.raw} (${pct}%)`;
+              },
             },
           },
         },
@@ -570,11 +704,41 @@
             position: 'bottom',
             labels: { padding: 14, usePointStyle: true, pointStyleWidth: 10 },
           },
-          tooltip: {
-            callbacks: {
-              label: ctx => ` ${ctx.label}: ${ctx.raw} clientes`,
-            },
-          },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} clientes` } },
+        },
+      },
+    });
+  }
+
+  // ── Creation chart ─────────────────────────────────────────────────────
+  function renderCreationChart(byCreation) {
+    if (charts.creation) charts.creation.destroy();
+    if (!byCreation || !byCreation.labels.length) return;
+
+    charts.creation = new Chart(document.getElementById('chart-creation'), {
+      type: 'bar',
+      data: {
+        labels: byCreation.labels,
+        datasets: [{
+          label: 'Citas creadas',
+          data:  byCreation.data,
+          backgroundColor: COLORS.blue + 'cc',
+          borderColor:     COLORS.blue,
+          borderWidth:     1,
+          borderRadius:    5,
+          borderSkipped:   false,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.raw} citas creadas` } },
+        },
+        scales: {
+          x: { grid: { color: '#252a42' } },
+          y: { grid: { color: '#252a42' }, beginAtZero: true, ticks: { stepSize: 1 } },
         },
       },
     });
@@ -583,23 +747,25 @@
   // ── Services list ──────────────────────────────────────────────────────
   function renderServices(services) {
     const max = services[0]?.count || 1;
-    const container = document.getElementById('services-list');
-    container.innerHTML = services.map(s => `
-      <div class="service-row">
-        <span class="service-name">${s.name}</span>
-        <div class="service-bar-wrap">
-          <div class="service-bar" style="width:${Math.round(s.count / max * 100)}%"></div>
-        </div>
-        <span class="service-count">${s.count}</span>
-      </div>
-    `).join('');
+    document.getElementById('services-list').innerHTML = services.length
+      ? services.map(s => `
+          <div class="service-row">
+            <span class="service-name">${s.name}</span>
+            <div class="service-bar-wrap">
+              <div class="service-bar" style="width:${Math.round(s.count / max * 100)}%"></div>
+            </div>
+            <span class="service-count">${s.count}</span>
+          </div>`).join('')
+      : '<p style="color:var(--muted);font-size:.85rem">Sin datos</p>';
   }
 
-  // ── Auto-poll cada 5 min (por si el servidor ya refrescó datos) ─────────
-  setInterval(loadStats, 5 * 60 * 1000);
-
   // ── Init ───────────────────────────────────────────────────────────────
-  loadStats();
+  const _now = new Date();
+  selectedYear  = _now.getFullYear();
+  selectedMonth = _now.getMonth() + 1;
+
+  buildMonthSelector();
+  checkSyncThenLoad();
 </script>
 </body>
 </html>

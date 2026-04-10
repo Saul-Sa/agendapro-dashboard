@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm start:*)",
+      "WebFetch(domain:developers.agendapro.com)",
+      "Bash(node -e ':*)"
+    ]
+  }
+}
