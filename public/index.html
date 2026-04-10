@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgendaPro Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d0f1a;
+      --surface:  #151829;
+      --card:     #1c2035;
+      --border:   #252a42;
+      --text:     #e2e8f0;
+      --muted:    #8892a4;
+      --accent:   #7c6af7;
+      --green:    #34d399;
+      --red:      #f87171;
+      --orange:   #fb923c;
+      --blue:     #60a5fa;
+      --yellow:   #fbbf24;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .brand { display: flex; align-items: center; gap: .75rem; }
+    .brand svg { flex-shrink: 0; }
+    .brand h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -.02em; }
+    .brand span { color: var(--accent); }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    #last-updated {
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
+    #status-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    #status-dot.loading { background: var(--yellow); animation: pulse 1s infinite; }
+    #status-dot.error   { background: var(--red); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .3; }
+    }
+
+    button#btn-refresh {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: .5rem 1rem;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      transition: opacity .2s;
+    }
+    button#btn-refresh:hover  { opacity: .85; }
+    button#btn-refresh:active { opacity: .7; }
+    button#btn-refresh:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── Main ── */
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem 1.5rem 3rem;
+    }
+
+    /* ── KPI cards ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 14px 14px 0 0;
+    }
+    .kpi.accent::before  { background: var(--accent); }
+    .kpi.green::before   { background: var(--green); }
+    .kpi.red::before     { background: var(--red); }
+    .kpi.blue::before    { background: var(--blue); }
+    .kpi.orange::before  { background: var(--orange); }
+
+    .kpi-label {
+      font-size: .75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: .5rem;
+    }
+
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -.03em;
+    }
+    .kpi.accent .kpi-value  { color: var(--accent); }
+    .kpi.green .kpi-value   { color: var(--green); }
+    .kpi.red .kpi-value     { color: var(--red); }
+    .kpi.blue .kpi-value    { color: var(--blue); }
+    .kpi.orange .kpi-value  { color: var(--orange); }
+
+    .kpi-sub {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: .35rem;
+    }
+
+    /* ── Chart grid ── */
+    .chart-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .chart-card.wide  { grid-column: 1 / -1; }
+    .chart-card.third { grid-column: span 1; }
+
+    .chart-title {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 1rem;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 220px;
+    }
+    .chart-wrap.tall  { height: 280px; }
+    .chart-wrap.short { height: 180px; }
+
+    /* ── Selector tabs ── */
+    .tab-group {
+      display: flex;
+      gap: .4rem;
+      margin-bottom: 1rem;
+    }
+    .tab {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .3rem .75rem;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Services list ── */
+    .service-row {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .4rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .service-row:last-child { border-bottom: none; }
+    .service-name { flex: 1; font-size: .85rem; }
+    .service-bar-wrap { width: 100px; background: var(--border); border-radius: 4px; height: 6px; }
+    .service-bar { height: 6px; border-radius: 4px; background: var(--accent); }
+    .service-count { font-size: .8rem; color: var(--muted); min-width: 28px; text-align: right; }
+
+    /* ── Loading overlay ── */
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 15, 26, .85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      z-index: 999;
+      font-size: 1rem;
+      color: var(--muted);
+    }
+    #loading.hidden { display: none; }
+
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error banner ── */
+    #error-banner {
+      background: rgba(248,113,113,.12);
+      border: 1px solid var(--red);
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      font-size: .85rem;
+      color: var(--red);
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .chart-grid { grid-template-columns: 1fr; }
+      .chart-card.wide,
+      .chart-card.third { grid-column: span 1; }
+      header { padding: 1rem; }
+      main   { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="spinner"></div>
+  <span>Cargando datos de AgendaPro...</span>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="brand">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="8" fill="#7c6af7"/>
+      <rect x="8" y="10" width="16" height="2" rx="1" fill="white"/>
+      <rect x="8" y="15" width="12" height="2" rx="1" fill="white"/>
+      <rect x="8" y="20" width="9" height="2" rx="1" fill="white"/>
+    </svg>
+    <h1>Agenda<span>Pro</span> Dashboard</h1>
+  </div>
+  <div class="header-right">
+    <span id="last-updated">
+      <span id="status-dot" class="loading"></span>
+      Cargando...
+    </span>
+    <button id="btn-refresh" onclick="manualRefresh()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="23 4 23 10 17 10"></polyline>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+      </svg>
+      Actualizar
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- Error -->
+  <div id="error-banner"></div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi accent">
+      <div class="kpi-label">Total citas (6 meses)</div>
+      <div class="kpi-value" id="kpi-total">—</div>
+      <div class="kpi-sub">últimos 6 meses</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Citas este mes</div>
+      <div class="kpi-value" id="kpi-month">—</div>
+      <div class="kpi-sub" id="kpi-month-sub">—</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label">Tasa de asistencia</div>
+      <div class="kpi-value" id="kpi-attendance">—</div>
+      <div class="kpi-sub">citas atendidas</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Canceladas</div>
+      <div class="kpi-value" id="kpi-cancelled">—</div>
+      <div class="kpi-sub">últimos 6 meses</div>
+    </div>
+    <div class="kpi orange">
+      <div class="kpi-label">No asistieron</div>
+      <div class="kpi-value" id="kpi-noshow">—</div>
+      <div class="kpi-sub">últimos 6 meses</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-grid">
+
+    <!-- Citas en el tiempo (day / week / month tabs) -->
+    <div class="chart-card wide">
+      <div class="chart-title">Citas en el tiempo</div>
+      <div class="tab-group">
+        <button class="tab active" onclick="switchTab('day', this)">Por día</button>
+        <button class="tab" onclick="switchTab('week', this)">Por semana</button>
+        <button class="tab" onclick="switchTab('month', this)">Por mes</button>
+      </div>
+      <div class="chart-wrap tall">
+        <canvas id="chart-time"></canvas>
+      </div>
+    </div>
+
+    <!-- Estado de citas -->
+    <div class="chart-card">
+      <div class="chart-title">Estado de citas</div>
+      <div class="chart-wrap">
+        <canvas id="chart-status"></canvas>
+      </div>
+    </div>
+
+    <!-- Clientes -->
+    <div class="chart-card">
+      <div class="chart-title">Clientes nuevos vs recurrentes</div>
+      <div class="chart-wrap">
+        <canvas id="chart-clients"></canvas>
+      </div>
+    </div>
+
+    <!-- Servicios más solicitados -->
+    <div class="chart-card wide">
+      <div class="chart-title">Servicios más solicitados</div>
+      <div id="services-list"></div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  // ── Chart defaults ─────────────────────────────────────────────────────
+  Chart.defaults.color = '#8892a4';
+  Chart.defaults.borderColor = '#252a42';
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+
+  const COLORS = {
+    accent:  '#7c6af7',
+    green:   '#34d399',
+    red:     '#f87171',
+    orange:  '#fb923c',
+    blue:    '#60a5fa',
+    yellow:  '#fbbf24',
+    muted:   '#8892a4',
+  };
+
+  // ── State ──────────────────────────────────────────────────────────────
+  let timeMode = 'day';
+  let statsData = null;
+  let charts = {};
+
+  // ── Fetch stats ────────────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const res = await fetch('/api/stats');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const { stats, lastUpdated } = await res.json();
+      statsData = stats;
+      render(stats, lastUpdated);
+      showError(null);
+    } catch (err) {
+      showError('No se pudo conectar con el servidor: ' + err.message);
+    } finally {
+      document.getElementById('loading').classList.add('hidden');
+    }
+  }
+
+  async function manualRefresh() {
+    const btn = document.getElementById('btn-refresh');
+    btn.disabled = true;
+    setStatus('loading');
+    await fetch('/api/refresh', { method: 'POST' });
+    // Esperar ~2s y recargar stats
+    setTimeout(async () => {
+      await loadStats();
+      btn.disabled = false;
+    }, 2000);
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────
+  function render(s, lastUpdated) {
+    // KPIs
+    document.getElementById('kpi-total').textContent = s.total.toLocaleString('es-CL');
+    document.getElementById('kpi-month').textContent = s.thisMonth.toLocaleString('es-CL');
+    document.getElementById('kpi-month-sub').textContent =
+      new Date().toLocaleDateString('es-CL', { month: 'long', year: 'numeric' });
+    document.getElementById('kpi-attendance').textContent = s.attendanceRate + '%';
+    document.getElementById('kpi-cancelled').textContent =
+      s.status.cancelled.toLocaleString('es-CL');
+    document.getElementById('kpi-noshow').textContent =
+      s.status.no_show.toLocaleString('es-CL');
+
+    // Last updated
+    const dot = document.getElementById('status-dot');
+    dot.className = '';
+    document.getElementById('last-updated').innerHTML =
+      `<span id="status-dot"></span>Actualizado: ${new Date(lastUpdated).toLocaleString('es-CL')}`;
+
+    // Charts
+    renderTimeChart(s);
+    renderStatusChart(s.status);
+    renderClientsChart(s.clients);
+    renderServices(s.services);
+  }
+
+  function setStatus(state) {
+    const dot = document.getElementById('status-dot');
+    if (dot) dot.className = state;
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-banner');
+    if (msg) { el.textContent = '⚠ ' + msg; el.style.display = 'block'; }
+    else      { el.style.display = 'none'; }
+  }
+
+  // ── Time chart ─────────────────────────────────────────────────────────
+  function switchTab(mode, el) {
+    timeMode = mode;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    if (statsData) renderTimeChart(statsData);
+  }
+
+  function renderTimeChart(s) {
+    const map = { day: s.byDay, week: s.byWeek, month: s.byMonth };
+    const { labels, data } = map[timeMode];
+
+    if (charts.time) charts.time.destroy();
+
+    charts.time = new Chart(document.getElementById('chart-time'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Citas',
+          data,
+          backgroundColor: COLORS.accent + 'cc',
+          borderColor: COLORS.accent,
+          borderWidth: 1,
+          borderRadius: 6,
+          borderSkipped: false,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.raw} citas` } },
+        },
+        scales: {
+          x: { grid: { color: '#252a42' } },
+          y: { grid: { color: '#252a42' }, beginAtZero: true, ticks: { stepSize: 1 } },
+        },
+      },
+    });
+  }
+
+  // ── Status doughnut ────────────────────────────────────────────────────
+  function renderStatusChart(status) {
+    if (charts.status) charts.status.destroy();
+
+    const labels   = ['Asistidas', 'Canceladas', 'No asistieron', 'Otras'];
+    const data     = [status.attended, status.cancelled, status.no_show, status.other];
+    const colors   = [COLORS.green, COLORS.red, COLORS.orange, COLORS.muted];
+
+    charts.status = new Chart(document.getElementById('chart-status'), {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#1c2035' }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { padding: 14, usePointStyle: true, pointStyleWidth: 10 },
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.raw} (${
+                Math.round(ctx.raw / ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0) * 100)
+              }%)`,
+            },
+          },
+        },
+      },
+    });
+  }
+
+  // ── Clients doughnut ───────────────────────────────────────────────────
+  function renderClientsChart(clients) {
+    if (charts.clients) charts.clients.destroy();
+
+    charts.clients = new Chart(document.getElementById('chart-clients'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Nuevos', 'Recurrentes'],
+        datasets: [{
+          data: [clients.new, clients.recurring],
+          backgroundColor: [COLORS.blue, COLORS.accent],
+          borderWidth: 2,
+          borderColor: '#1c2035',
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { padding: 14, usePointStyle: true, pointStyleWidth: 10 },
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.raw} clientes`,
+            },
+          },
+        },
+      },
+    });
+  }
+
+  // ── Services list ──────────────────────────────────────────────────────
+  function renderServices(services) {
+    const max = services[0]?.count || 1;
+    const container = document.getElementById('services-list');
+    container.innerHTML = services.map(s => `
+      <div class="service-row">
+        <span class="service-name">${s.name}</span>
+        <div class="service-bar-wrap">
+          <div class="service-bar" style="width:${Math.round(s.count / max * 100)}%"></div>
+        </div>
+        <span class="service-count">${s.count}</span>
+      </div>
+    `).join('');
+  }
+
+  // ── Auto-poll cada 5 min (por si el servidor ya refrescó datos) ─────────
+  setInterval(loadStats, 5 * 60 * 1000);
+
+  // ── Init ───────────────────────────────────────────────────────────────
+  loadStats();
+</script>
+</body>
+</html>
