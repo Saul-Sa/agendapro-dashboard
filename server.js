@@ -61,32 +61,33 @@ function col(row, ...candidates) {
 }
 
 function mapRow(row) {
-  const start        = toDateStr(col(row, 'Fecha de realización', 'Fecha realizacion', 'start', 'fecha_cita', 'fecha'));
-  const created_date = toDateStr(col(row, 'Fecha de creación',    'Fecha de creacion',  'created_date', 'fecha_creacion'));
-  const status       = String(col(row, 'Estado', 'status') || '').trim();
-  const service      = String(col(row, 'Servicio', 'service', 'service_name') || '').trim();
-  const clientNum    = String(col(row, 'N° de Cliente', 'N de Cliente', 'client_id', 'cliente_id', 'ID Cliente') || '').trim();
-  const nombre       = String(col(row, 'Nombre', 'first_name', 'nombre') || '').trim();
-  const apellido     = String(col(row, 'Apellido', 'last_name', 'apellido') || '').trim();
-  const precio       = col(row, 'Precio real', 'precio_real', 'price', 'precio');
-  const prestador    = String(col(row, 'Prestador', 'provider', 'profesional') || '').trim();
-  const local        = String(col(row, 'Local', 'location', 'sucursal') || '').trim();
-  const origen       = String(col(row, 'Origen', 'origin', 'source') || '').trim();
+  const start          = toDateStr(col(row, 'Fecha de realización', 'Fecha realizacion', 'start', 'fecha_cita', 'fecha'));
+  const created_date   = toDateStr(col(row, 'Fecha de creación',    'Fecha de creacion',  'created_date', 'fecha_creacion'));
+  const status         = String(col(row, 'Estado', 'status') || '').trim();
+  const service        = String(col(row, 'Servicio', 'service', 'service_name') || '').trim();
+  const clientNum      = String(col(row, 'N° de Cliente', 'N de Cliente', 'client_id', 'cliente_id', 'ID Cliente') || '').trim();
+  const identificacion = String(col(row, 'N.º de identificación', 'N de identificacion', 'Numero de identificacion', 'identificacion', 'rut', 'dni', 'cedula') || '').trim();
+  const nombre         = String(col(row, 'Nombre', 'first_name', 'nombre') || '').trim();
+  const apellido       = String(col(row, 'Apellido', 'last_name', 'apellido') || '').trim();
+  const precio         = col(row, 'Precio real', 'precio_real', 'price', 'precio');
+  const prestador      = String(col(row, 'Prestador', 'provider', 'profesional') || '').trim();
+  const local          = String(col(row, 'Local', 'location', 'sucursal') || '').trim();
+  const origen         = String(col(row, 'Origen', 'origin', 'source') || '').trim();
 
-  return { start, created_date, status, service, clientNum, nombre, apellido, precio, prestador, local, origen };
+  return { start, created_date, status, service, clientNum, identificacion, nombre, apellido, precio, prestador, local, origen };
 }
 
-// Genera un ID determinista por combinación única
-function makeId(start, clientNum, service) {
-  return [start || '', clientNum || '', service || ''].join('|');
+// Genera un ID determinista por combinación única:
+// Fecha de realización + N.º de identificación + Servicio + Prestador
+function makeId(start, identificacion, service, prestador) {
+  return [start || '', identificacion || '', service || '', prestador || ''].join('|');
 }
 
 // ── Guardar en SQLite ─────────────────────────────────────────────────────
 const saveMany = db.transaction((rows) => {
   let saved = 0, dupes = 0;
   for (const r of rows) {
-    const id = makeId(r.start, r.clientNum, r.service);
-    if (!r.start && !r.clientNum && !r.service) { dupes++; continue; }
+    const id = makeId(r.start, r.identificacion, r.service, r.prestador);
 
     const data = JSON.stringify({
       start:          r.start,
@@ -94,6 +95,7 @@ const saveMany = db.transaction((rows) => {
       status:         r.status,
       service:        r.service,
       client_id:      r.clientNum,
+      identificacion: r.identificacion,
       cliente_nombre: `${r.nombre} ${r.apellido}`.trim(),
       precio:         r.precio,
       prestador:      r.prestador,
@@ -110,13 +112,17 @@ const saveMany = db.transaction((rows) => {
 
 // ── Estadísticas ──────────────────────────────────────────────────────────
 function bookingStatus(b) {
+  // Normaliza: minúsculas, sin tildes, espacios Y guiones → guion bajo
   const s = (b.status || '').toLowerCase().trim()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/-/g, '_');
-  if (['asiste', 'attended', 'completed', 'present'].includes(s))             return 'attended';
-  if (['cancelado', 'cancelada', 'cancelled', 'canceled'].includes(s))        return 'cancelled';
-  if (['no_show', 'no_asiste', 'absent', 'missed', 'no_showed'].includes(s))  return 'no_show';
-  if (['reservado', 'confirmado', 'confirmed', 'pending'].includes(s))         return 'pending';
-  return 'other';
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[-\s]+/g, '_');
+  if (['asiste', 'attended', 'completed', 'present'].includes(s))              return 'asiste';
+  if (['confirmado', 'confirmed'].includes(s))                                  return 'confirmado';
+  if (['reservado', 'booked'].includes(s))                                      return 'reservado';
+  if (['pendiente', 'pending'].includes(s))                                     return 'pendiente';
+  if (['cancelado', 'cancelada', 'cancelled', 'canceled'].includes(s))         return 'cancelado';
+  if (['no_asiste', 'no_show', 'absent', 'missed', 'no_showed'].includes(s))   return 'no_asiste';
+  return 'otro';
 }
 
 function buildStats(year, month) {
@@ -149,10 +155,10 @@ function buildStats(year, month) {
   }
 
   // Estado
-  const statusCount = { attended: 0, pending: 0, cancelled: 0, no_show: 0, other: 0 };
+  const statusCount = { asiste: 0, confirmado: 0, reservado: 0, pendiente: 0, cancelado: 0, no_asiste: 0, otro: 0 };
   bookings.forEach(b => statusCount[bookingStatus(b)]++);
-  const resolved = statusCount.attended + statusCount.cancelled + statusCount.no_show;
-  const attendanceRate = resolved > 0 ? Math.round(statusCount.attended / resolved * 100) : 0;
+  const resolved = statusCount.asiste + statusCount.cancelado + statusCount.no_asiste;
+  const attendanceRate = resolved > 0 ? Math.round(statusCount.asiste / resolved * 100) : 0;
 
   // Clientes nuevos vs recurrentes (por N° de cliente)
   const clientVisits = {};
@@ -225,13 +231,37 @@ app.post('/api/import', upload.single('file'), (req, res) => {
 
     if (rows.length === 0) return res.status(400).json({ error: 'El archivo no tiene datos' });
 
+    const totalExcel = rows.length;
     const mapped = rows.map(mapRow);
-    const { saved, dupes } = saveMany(mapped);
+
+    // Deduplicación en memoria: Fecha + Identificación + Servicio + Prestador
+    const seenKeys = new Map();
+    const dedupedRows = [];
+    let dupesInExcel = 0;
+    for (const r of mapped) {
+      const key = makeId(r.start, r.identificacion, r.service, r.prestador);
+      if (seenKeys.has(key)) {
+        dupesInExcel++;
+      } else {
+        seenKeys.set(key, true);
+        dedupedRows.push(r);
+      }
+    }
+
+    console.log(`[import] ${req.file.originalname}:`);
+    console.log(`  → Excel original:          ${totalExcel} registros`);
+    console.log(`  → Después de deduplicar:   ${dedupedRows.length} registros`);
+    console.log(`  → Duplicados eliminados:   ${dupesInExcel} registros`);
+
+    const { saved, dupes: dupesInDb } = saveMany(dedupedRows);
 
     setMeta('last_import', new Date().toISOString());
     const dbTotal = stmtCount.get().c;
-    console.log(`[import] ${req.file.originalname}: ${rows.length} filas → ${saved} nuevos, ${dupes} duplicados. DB total: ${dbTotal}`);
-    res.json({ ok: true, rows: rows.length, saved, dupes, dbTotal });
+    console.log(`  → Nuevos guardados en DB:  ${saved}`);
+    console.log(`  → Ya existían en DB:       ${dupesInDb}`);
+    console.log(`  → DB total:                ${dbTotal}`);
+
+    res.json({ ok: true, rows: totalExcel, dedupedRows: dedupedRows.length, dupesInExcel, saved, dupesInDb, dbTotal });
   } catch (err) {
     console.error('[import]', err.message);
     res.status(500).json({ error: err.message });
@@ -242,4 +272,9 @@ app.post('/api/import', upload.single('file'), (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor en http://localhost:${PORT}`);
   console.log(`DB: ${stmtCount.get().c} bookings`);
+
+  // Debug: distribución real de valores en la columna "status"
+  const dist = db.prepare('SELECT status, COUNT(*) AS c FROM bookings GROUP BY status ORDER BY c DESC').all();
+  console.log('[DB] Distribución de estados (valores exactos guardados):');
+  dist.forEach(r => console.log(`  "${r.status ?? 'NULL'}": ${r.c}`));
 });

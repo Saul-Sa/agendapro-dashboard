@@ -21,6 +21,7 @@
       --orange:  #fb923c;
       --blue:    #60a5fa;
       --yellow:  #fbbf24;
+      --purple:  #c084fc;
     }
 
     body {
@@ -174,6 +175,7 @@
     .kpi.blue::before    { background: var(--blue);   }
     .kpi.orange::before  { background: var(--orange); }
     .kpi.yellow::before  { background: var(--yellow); }
+    .kpi.purple::before  { background: var(--purple); }
 
     .kpi-label {
       font-size: .75rem;
@@ -195,6 +197,7 @@
     .kpi.blue   .kpi-value  { color: var(--blue);   }
     .kpi.orange .kpi-value  { color: var(--orange); }
     .kpi.yellow .kpi-value  { color: var(--yellow); }
+    .kpi.purple .kpi-value  { color: var(--purple); }
 
     .kpi-sub { font-size: .75rem; color: var(--muted); margin-top: .35rem; }
 
@@ -348,34 +351,39 @@
   <!-- KPIs -->
   <div class="kpi-grid">
     <div class="kpi accent">
-      <div class="kpi-label" id="kpi-total-label">Total citas</div>
+      <div class="kpi-label">Total citas</div>
       <div class="kpi-value" id="kpi-total">—</div>
       <div class="kpi-sub" id="kpi-period">—</div>
     </div>
     <div class="kpi green">
-      <div class="kpi-label">Asistidas</div>
-      <div class="kpi-value" id="kpi-attended">—</div>
+      <div class="kpi-label">Asiste</div>
+      <div class="kpi-value" id="kpi-asiste">—</div>
       <div class="kpi-sub" id="kpi-attendance-sub">—</div>
     </div>
+    <div class="kpi blue">
+      <div class="kpi-label">Confirmado</div>
+      <div class="kpi-value" id="kpi-confirmado">—</div>
+      <div class="kpi-sub">del período</div>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-label">Reservado</div>
+      <div class="kpi-value" id="kpi-reservado">—</div>
+      <div class="kpi-sub">del período</div>
+    </div>
     <div class="kpi yellow">
-      <div class="kpi-label">Pendientes</div>
-      <div class="kpi-value" id="kpi-pending">—</div>
-      <div class="kpi-sub">reservadas / confirmadas</div>
+      <div class="kpi-label">Pendiente</div>
+      <div class="kpi-value" id="kpi-pendiente">—</div>
+      <div class="kpi-sub">del período</div>
     </div>
     <div class="kpi red">
-      <div class="kpi-label">Canceladas</div>
-      <div class="kpi-value" id="kpi-cancelled">—</div>
+      <div class="kpi-label">Cancelado</div>
+      <div class="kpi-value" id="kpi-cancelado">—</div>
       <div class="kpi-sub">del período</div>
     </div>
     <div class="kpi orange">
-      <div class="kpi-label">No asistieron</div>
-      <div class="kpi-value" id="kpi-noshow">—</div>
+      <div class="kpi-label">No Asiste</div>
+      <div class="kpi-value" id="kpi-no-asiste">—</div>
       <div class="kpi-sub">del período</div>
-    </div>
-    <div class="kpi blue">
-      <div class="kpi-label">Tasa asistencia</div>
-      <div class="kpi-value" id="kpi-attendance">—</div>
-      <div class="kpi-sub">sobre citas resueltas</div>
     </div>
   </div>
 
@@ -439,6 +447,7 @@
     orange:  '#fb923c',
     blue:    '#60a5fa',
     yellow:  '#fbbf24',
+    purple:  '#c084fc',
     muted:   '#8892a4',
   };
 
@@ -575,14 +584,15 @@
 
     // KPIs
     const st = s.status || {};
-    document.getElementById('kpi-period').textContent     = periodName;
-    document.getElementById('kpi-total').textContent      = (s.total ?? 0).toLocaleString('es-CL');
-    document.getElementById('kpi-attended').textContent   = (st.attended  ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-period').textContent        = periodName;
+    document.getElementById('kpi-total').textContent         = (s.total ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-asiste').textContent        = (st.asiste     ?? 0).toLocaleString('es-CL');
     document.getElementById('kpi-attendance-sub').textContent = (s.attendanceRate ?? 0) + '% de asistencia';
-    document.getElementById('kpi-pending').textContent    = (st.pending   ?? 0).toLocaleString('es-CL');
-    document.getElementById('kpi-cancelled').textContent  = (st.cancelled ?? 0).toLocaleString('es-CL');
-    document.getElementById('kpi-noshow').textContent     = (st.no_show   ?? 0).toLocaleString('es-CL');
-    document.getElementById('kpi-attendance').textContent = (s.attendanceRate ?? 0) + '%';
+    document.getElementById('kpi-confirmado').textContent    = (st.confirmado  ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-reservado').textContent     = (st.reservado   ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-pendiente').textContent     = (st.pendiente   ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-cancelado').textContent     = (st.cancelado   ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-no-asiste').textContent     = (st.no_asiste   ?? 0).toLocaleString('es-CL');
 
     // Timestamp
     document.getElementById('last-updated').innerHTML =
@@ -649,10 +659,24 @@
     charts.status = new Chart(document.getElementById('chart-status'), {
       type: 'doughnut',
       data: {
-        labels: ['Asistidas', 'Pendientes', 'Canceladas', 'No asistieron', 'Otras'],
+        labels: ['Asiste', 'Confirmado', 'Reservado', 'Pendiente', 'Cancelado', 'No Asiste'],
         datasets: [{
-          data: [status.attended, status.pending, status.cancelled, status.no_show, status.other],
-          backgroundColor: [COLORS.green, COLORS.yellow, COLORS.red, COLORS.orange, COLORS.muted],
+          data: [
+            status.asiste     ?? 0,
+            status.confirmado ?? 0,
+            status.reservado  ?? 0,
+            status.pendiente  ?? 0,
+            status.cancelado  ?? 0,
+            status.no_asiste  ?? 0,
+          ],
+          backgroundColor: [
+            COLORS.green,
+            COLORS.blue,
+            COLORS.purple,
+            COLORS.yellow,
+            COLORS.red,
+            COLORS.orange,
+          ],
           borderWidth: 2,
           borderColor: '#1c2035',
         }],
