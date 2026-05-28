@@ -99,6 +99,23 @@
     }
     button#btn-import:hover { border-color: var(--accent); color: var(--text); }
 
+    button#btn-clear-db {
+      background: transparent;
+      color: var(--red);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .5rem 1rem;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      transition: all .2s;
+    }
+    button#btn-clear-db:hover { border-color: var(--red); background: rgba(248,113,113,.1); }
+    button#btn-clear-db:disabled { opacity: .5; cursor: not-allowed; }
+
     #import-result {
       font-size: .78rem;
       padding: .3rem .7rem;
@@ -239,19 +256,89 @@
     }
     .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-    /* ── Services list ── */
-    .service-row {
+    /* ── Services table ── */
+    .services-table {
       display: flex;
-      align-items: center;
-      gap: .75rem;
-      padding: .4rem 0;
-      border-bottom: 1px solid var(--border);
+      flex-direction: column;
+      gap: 0;
     }
+
+    .services-header {
+      display: grid;
+      grid-template-columns: 40px 1fr 120px 70px 60px;
+      gap: .75rem;
+      padding: .6rem .75rem;
+      background: var(--surface);
+      border-radius: 8px;
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: .5rem;
+    }
+
+    .services-body {
+      max-height: 400px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .services-body::-webkit-scrollbar { width: 6px; }
+    .services-body::-webkit-scrollbar-track { background: transparent; }
+    .services-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .service-row {
+      display: grid;
+      grid-template-columns: 40px 1fr 120px 70px 60px;
+      gap: .75rem;
+      align-items: center;
+      padding: .65rem .75rem;
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+    .service-row:hover { background: rgba(124, 106, 247, .05); }
     .service-row:last-child { border-bottom: none; }
-    .service-name  { flex: 1; font-size: .85rem; }
-    .service-bar-wrap { width: 100px; background: var(--border); border-radius: 4px; height: 6px; }
-    .service-bar   { height: 6px; border-radius: 4px; background: var(--accent); }
-    .service-count { font-size: .8rem; color: var(--muted); min-width: 28px; text-align: right; }
+
+    .col-rank {
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-align: center;
+    }
+    .col-name {
+      font-size: .85rem;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .col-bar { }
+    .col-count {
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text);
+      text-align: right;
+    }
+    .col-percent {
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--green);
+      text-align: right;
+    }
+
+    .service-bar-wrap {
+      width: 100%;
+      background: var(--border);
+      border-radius: 4px;
+      height: 6px;
+    }
+    .service-bar {
+      height: 6px;
+      border-radius: 4px;
+      background: var(--accent);
+      transition: width .3s ease;
+    }
 
     /* ── Loading overlay ── */
     #loading {
@@ -277,6 +364,262 @@
       animation: spin .8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Modal Overlay ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 15, 26, .92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn .2s ease;
+    }
+    .modal-overlay.hidden { display: none; }
+
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 900px;
+      width: 90%;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp .3s ease;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 2rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all .2s;
+    }
+    .modal-close:hover { background: var(--surface); color: var(--text); }
+
+    .modal-body {
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .chart-wrap-modal {
+      height: 350px;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .btn-detail {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: .75rem 1.5rem;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .btn-detail:hover { opacity: .85; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* ── Detail View (Full Page) ── */
+    .detail-view {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 999;
+      overflow-y: auto;
+      animation: fadeIn .3s ease;
+    }
+    .detail-view.hidden { display: none; }
+
+    .detail-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .btn-back {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: .5rem 1rem;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+
+    .detail-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .detail-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .detail-kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .detail-kpi {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .detail-kpi-label {
+      font-size: .75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: .5rem;
+    }
+
+    .detail-kpi-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .detail-chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-wrap-detail {
+      height: 400px;
+    }
+
+    .detail-table-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem;
+    }
+
+    .detail-table-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    #detail-table {
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: .75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table th {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      background: var(--surface);
+    }
+
+    .data-table td {
+      font-size: .9rem;
+      color: var(--text);
+    }
+
+    .data-table tr:hover {
+      background: rgba(124, 106, 247, .05);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ── Clickable KPIs & Chart ── */
+    .kpi {
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .kpi:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(124, 106, 247, .2);
+    }
 
     /* ── Error banner ── */
     #error-banner {
@@ -332,6 +675,15 @@
     </button>
     <input id="file-input" type="file" accept=".csv,.xlsx,.xls" style="display:none" onchange="importFile(this)">
     <span id="import-result"></span>
+    <button id="btn-clear-db" onclick="clearDatabase()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        <line x1="10" y1="11" x2="10" y2="17"></line>
+        <line x1="14" y1="11" x2="14" y2="17"></line>
+      </svg>
+      Limpiar DB
+    </button>
     <button id="btn-refresh" onclick="manualRefresh()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <polyline points="23 4 23 10 17 10"></polyline>
@@ -363,27 +715,27 @@
     <div class="kpi blue">
       <div class="kpi-label">Confirmado</div>
       <div class="kpi-value" id="kpi-confirmado">—</div>
-      <div class="kpi-sub">del período</div>
+      <div class="kpi-sub" id="kpi-confirmado-sub">—</div>
     </div>
     <div class="kpi purple">
       <div class="kpi-label">Reservado</div>
       <div class="kpi-value" id="kpi-reservado">—</div>
-      <div class="kpi-sub">del período</div>
+      <div class="kpi-sub" id="kpi-reservado-sub">—</div>
     </div>
     <div class="kpi yellow">
       <div class="kpi-label">Pendiente</div>
       <div class="kpi-value" id="kpi-pendiente">—</div>
-      <div class="kpi-sub">del período</div>
+      <div class="kpi-sub" id="kpi-pendiente-sub">—</div>
     </div>
     <div class="kpi red">
       <div class="kpi-label">Cancelado</div>
       <div class="kpi-value" id="kpi-cancelado">—</div>
-      <div class="kpi-sub">del período</div>
+      <div class="kpi-sub" id="kpi-cancelado-sub">—</div>
     </div>
     <div class="kpi orange">
       <div class="kpi-label">No Asiste</div>
       <div class="kpi-value" id="kpi-no-asiste">—</div>
-      <div class="kpi-sub">del período</div>
+      <div class="kpi-sub" id="kpi-no-asiste-sub">—</div>
     </div>
   </div>
 
@@ -418,9 +770,14 @@
       </div>
     </div>
 
-    <!-- Citas creadas por día -->
+    <!-- Citas creadas -->
     <div class="chart-card wide">
-      <div class="chart-title">Citas creadas por día (fecha de creación)</div>
+      <div class="chart-title">Citas creadas (fecha de creación)</div>
+      <div class="tab-group">
+        <button class="tab active" onclick="switchCreationTab('day', this)">Por día</button>
+        <button class="tab" onclick="switchCreationTab('week', this)">Por semana</button>
+        <button class="tab" onclick="switchCreationTab('month', this)">Por mes</button>
+      </div>
       <div class="chart-wrap tall">
         <canvas id="chart-creation"></canvas>
       </div>
@@ -428,12 +785,80 @@
 
     <!-- Servicios -->
     <div class="chart-card wide">
-      <div class="chart-title">Servicios más solicitados</div>
+      <div class="chart-title">Ranking de servicios</div>
       <div id="services-list"></div>
     </div>
 
   </div>
 </main>
+
+<!-- Modal Quick View -->
+<div id="modal-overlay" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modal-title">Análisis Temporal</h2>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="chart-wrap-modal">
+        <canvas id="chart-modal"></canvas>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-detail" onclick="openDetailView()">
+          📊 Ver análisis completo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail View (Full Page) -->
+<div id="detail-view" class="detail-view hidden">
+  <div class="detail-header">
+    <button class="btn-back" onclick="closeDetailView()">
+      ← Volver al Dashboard
+    </button>
+    <h1 id="detail-title">Análisis Temporal Detallado</h1>
+  </div>
+  <div class="detail-content">
+    <!-- KPIs Summary -->
+    <div class="detail-kpis">
+      <div class="detail-kpi">
+        <div class="detail-kpi-label">Total</div>
+        <div class="detail-kpi-value" id="detail-total">—</div>
+      </div>
+      <div class="detail-kpi">
+        <div class="detail-kpi-label">Promedio/mes</div>
+        <div class="detail-kpi-value" id="detail-avg">—</div>
+      </div>
+      <div class="detail-kpi">
+        <div class="detail-kpi-label">Máximo</div>
+        <div class="detail-kpi-value" id="detail-max">—</div>
+      </div>
+      <div class="detail-kpi">
+        <div class="detail-kpi-label">Mínimo</div>
+        <div class="detail-kpi-value" id="detail-min">—</div>
+      </div>
+      <div class="detail-kpi">
+        <div class="detail-kpi-label">Período</div>
+        <div class="detail-kpi-value" id="detail-months">—</div>
+      </div>
+    </div>
+
+    <!-- Main Chart -->
+    <div class="detail-chart-card">
+      <div class="chart-wrap-detail">
+        <canvas id="chart-detail"></canvas>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="detail-table-card">
+      <h3>Datos por mes</h3>
+      <div id="detail-table"></div>
+    </div>
+  </div>
+</div>
 
 <script>
   Chart.defaults.color      = '#8892a4';
@@ -453,36 +878,77 @@
 
   // ── Estado ─────────────────────────────────────────────────────────────
   let timeMode     = 'day';
+  let creationMode = 'day';
   let statsData    = null;
   let charts       = {};
   let selectedYear, selectedMonth;
 
+  // Cache de stats por mes (key: "YYYY-MM", value: stats object)
+  let statsCache = {};
+
+  // Variables para drill-down
+  let currentStatus = null;
+  let historicalData = null;
+  let chartModal = null;
+  let chartDetail = null;
+
   // ── Selector de meses ──────────────────────────────────────────────────
-  function buildMonthSelector() {
-    const bar  = document.getElementById('month-bar');
-    const now  = new Date();
-    const frag = document.createDocumentFragment();
+  async function buildMonthSelector() {
+    const bar = document.getElementById('month-bar');
+    bar.innerHTML = ''; // Limpiar selector existente
 
-    // Últimos 12 meses + mes actual (13 pills, más reciente a la derecha)
-    for (let i = 12; i >= 0; i--) {
-      const d     = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const year  = d.getFullYear();
-      const month = d.getMonth() + 1;
-      const label = d.toLocaleDateString('es-CL', { month: 'short', year: 'numeric' });
+    try {
+      // Obtener meses con datos desde el backend
+      const res = await fetch('/api/available-months');
+      const data = await res.json();
 
-      const pill = document.createElement('span');
-      pill.className   = 'month-pill' + (i === 0 ? ' active' : '');
-      pill.textContent = label;
-      pill.dataset.year  = year;
-      pill.dataset.month = month;
-      pill.addEventListener('click', () => selectMonth(year, month, pill));
-      frag.appendChild(pill);
+      if (!res.ok || !data.months || data.months.length === 0) {
+        // Si no hay meses, mostrar el mes actual por defecto
+        const now = new Date();
+        data.months = [{
+          year: now.getFullYear(),
+          month: now.getMonth() + 1,
+          label: now.toLocaleDateString('es-CL', { month: 'short', year: 'numeric' })
+        }];
+      }
+
+      const frag = document.createDocumentFragment();
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+
+      // Crear pill para cada mes con datos
+      data.months.forEach((m, index) => {
+        const pill = document.createElement('span');
+        const isCurrentMonth = m.year === currentYear && m.month === currentMonth;
+        const isLastMonth = index === data.months.length - 1;
+
+        pill.className = 'month-pill' + (isCurrentMonth || isLastMonth ? ' active' : '');
+        pill.textContent = m.label;
+        pill.dataset.year = m.year;
+        pill.dataset.month = m.month;
+        pill.addEventListener('click', () => selectMonth(m.year, m.month, pill));
+        frag.appendChild(pill);
+
+        // Establecer como mes seleccionado por defecto
+        if (isCurrentMonth || isLastMonth) {
+          selectedYear = m.year;
+          selectedMonth = m.month;
+        }
+      });
+
+      bar.appendChild(frag);
+
+      // Scroll al final (mes más reciente o actual)
+      setTimeout(() => { bar.scrollLeft = bar.scrollWidth; }, 100);
+
+    } catch (err) {
+      console.error('Error al cargar meses:', err);
+      // Fallback: mostrar mes actual
+      const now = new Date();
+      selectedYear = now.getFullYear();
+      selectedMonth = now.getMonth() + 1;
     }
-
-    bar.appendChild(frag);
-
-    // Scroll al final (mes actual)
-    bar.scrollLeft = bar.scrollWidth;
   }
 
   function selectMonth(year, month, pill) {
@@ -518,18 +984,41 @@
 
   // ── Fetch stats (desde SQLite, instantáneo) ────────────────────────────
   async function loadStats(year, month) {
+    const cacheKey = `${year}-${String(month).padStart(2, '0')}`;
+
     try {
+      // Verificar cache primero
+      if (statsCache[cacheKey]) {
+        console.log(`📦 Cache HIT: ${cacheKey} (instantáneo)`);
+        statsData = statsCache[cacheKey].stats;
+        render(statsCache[cacheKey]);
+        showError(null);
+        return;
+      }
+
+      // Si no está en cache, mostrar indicador y fetchear
+      console.log(`🌐 Cache MISS: ${cacheKey} (fetching...)`);
+      document.getElementById('loading-text').textContent = `Cargando ${cacheKey}...`;
+      document.getElementById('loading').classList.remove('hidden');
+
       const res = await fetch(`/api/stats?year=${year}&month=${month}`);
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || `HTTP ${res.status}`);
       }
+
       const payload = await res.json();
+
+      // Guardar en cache
+      statsCache[cacheKey] = payload;
+
       statsData = payload.stats;
       render(payload);
       showError(null);
+      document.getElementById('loading').classList.add('hidden');
     } catch (err) {
       showError('Error al cargar datos: ' + err.message);
+      document.getElementById('loading').classList.add('hidden');
     }
   }
 
@@ -554,9 +1043,28 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
 
-      result.textContent = `✓ ${data.saved.toLocaleString('es-CL')} registros importados (${data.dbTotal.toLocaleString('es-CL')} en DB)`;
+      // Mensaje detallado del resultado
+      const parts = [];
+      if (data.newRecords > 0) parts.push(`${data.newRecords.toLocaleString('es-CL')} nuevos`);
+      if (data.updated > 0) parts.push(`${data.updated.toLocaleString('es-CL')} actualizados`);
+      if (data.unchanged > 0) parts.push(`${data.unchanged.toLocaleString('es-CL')} sin cambios`);
+      if (data.dupesInExcel > 0) parts.push(`${data.dupesInExcel.toLocaleString('es-CL')} duplicados en Excel`);
+
+      result.textContent = `✓ ${parts.join(' • ')} | Total en DB: ${data.dbTotal.toLocaleString('es-CL')}`;
       result.className   = 'ok';
       result.style.display = 'inline-block';
+
+      // Limpiar cache al importar nuevos datos
+      if (data.newRecords > 0 || data.updated > 0) {
+        console.log('🗑️ Cache limpiado (datos actualizados)');
+        statsCache = {};
+      }
+
+      // Actualizar selector de meses (puede haber nuevos meses)
+      if (data.newRecords > 0) {
+        await buildMonthSelector();
+      }
+
       await checkSyncThenLoad(); // recarga el dashboard con los nuevos datos
     } catch (err) {
       result.textContent = `✗ ${err.message}`;
@@ -577,6 +1085,45 @@
     checkSyncThenLoad().then(() => { btn.disabled = false; });
   }
 
+  async function clearDatabase() {
+    const confirmMsg = '⚠️ ¿Estás seguro de que quieres ELIMINAR TODA LA BASE DE DATOS?\n\nEsto borrará todas las reservas cargadas.\nDeberás volver a importar todos los archivos Excel.\n\n¿Continuar?';
+
+    if (!confirm(confirmMsg)) return;
+
+    const btn = document.getElementById('btn-clear-db');
+    const result = document.getElementById('import-result');
+    btn.disabled = true;
+
+    try {
+      document.getElementById('loading-text').textContent = 'Limpiando base de datos…';
+      document.getElementById('loading').classList.remove('hidden');
+
+      const res = await fetch('/api/clear-db', { method: 'POST' });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+      result.textContent = `✓ ${data.deletedRecords.toLocaleString('es-CL')} registros eliminados. DB limpia.`;
+      result.className = 'ok';
+      result.style.display = 'inline-block';
+
+      // Limpiar cache al borrar DB
+      console.log('🗑️ Cache limpiado (DB borrada)');
+      statsCache = {};
+
+      // Actualizar selector de meses (ahora vacío)
+      await buildMonthSelector();
+      await checkSyncThenLoad();
+    } catch (err) {
+      result.textContent = `✗ Error al limpiar DB: ${err.message}`;
+      result.className = 'err';
+      result.style.display = 'inline-block';
+      document.getElementById('loading').classList.add('hidden');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────
   function render({ stats: s, year, month, fetchedAt }) {
     const d          = new Date(year, month - 1, 1);
@@ -584,15 +1131,21 @@
 
     // KPIs
     const st = s.status || {};
-    document.getElementById('kpi-period').textContent        = periodName;
-    document.getElementById('kpi-total').textContent         = (s.total ?? 0).toLocaleString('es-CL');
-    document.getElementById('kpi-asiste').textContent        = (st.asiste     ?? 0).toLocaleString('es-CL');
-    document.getElementById('kpi-attendance-sub').textContent = (s.attendanceRate ?? 0) + '% de asistencia';
-    document.getElementById('kpi-confirmado').textContent    = (st.confirmado  ?? 0).toLocaleString('es-CL');
-    document.getElementById('kpi-reservado').textContent     = (st.reservado   ?? 0).toLocaleString('es-CL');
-    document.getElementById('kpi-pendiente').textContent     = (st.pendiente   ?? 0).toLocaleString('es-CL');
-    document.getElementById('kpi-cancelado').textContent     = (st.cancelado   ?? 0).toLocaleString('es-CL');
-    document.getElementById('kpi-no-asiste').textContent     = (st.no_asiste   ?? 0).toLocaleString('es-CL');
+    const sp = s.statusPercent || {};
+    document.getElementById('kpi-period').textContent           = periodName;
+    document.getElementById('kpi-total').textContent            = (s.total ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-asiste').textContent           = (st.asiste ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-attendance-sub').textContent   = (s.attendanceRate ?? 0) + '% de asistencia';
+    document.getElementById('kpi-confirmado').textContent       = (st.confirmado ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-confirmado-sub').textContent   = (sp.confirmado ?? 0) + '% del total';
+    document.getElementById('kpi-reservado').textContent        = (st.reservado ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-reservado-sub').textContent    = (sp.reservado ?? 0) + '% del total';
+    document.getElementById('kpi-pendiente').textContent        = (st.pendiente ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-pendiente-sub').textContent    = (sp.pendiente ?? 0) + '% del total';
+    document.getElementById('kpi-cancelado').textContent        = (st.cancelado ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-cancelado-sub').textContent    = (sp.cancelado ?? 0) + '% del total';
+    document.getElementById('kpi-no-asiste').textContent        = (st.no_asiste ?? 0).toLocaleString('es-CL');
+    document.getElementById('kpi-no-asiste-sub').textContent    = (sp.no_asiste ?? 0) + '% del total';
 
     // Timestamp
     document.getElementById('last-updated').innerHTML =
@@ -603,6 +1156,30 @@
     renderClientsChart(s.clients);
     renderCreationChart(s.byCreation);
     renderServices(s.services);
+
+    // Agregar event listeners a KPIs para drill-down
+    attachKPIClickHandlers();
+  }
+
+  function attachKPIClickHandlers() {
+    // KPI handlers
+    const kpiHandlers = [
+      { selector: '.kpi.accent', status: 'total' },
+      { selector: '.kpi.green', status: 'asiste' },
+      { selector: '.kpi.blue', status: 'confirmado' },
+      { selector: '.kpi.purple', status: 'reservado' },
+      { selector: '.kpi.yellow', status: 'pendiente' },
+      { selector: '.kpi.red', status: 'cancelado' },
+      { selector: '.kpi.orange', status: 'no_asiste' }
+    ];
+
+    kpiHandlers.forEach(({ selector, status }) => {
+      const el = document.querySelector(selector);
+      if (el) {
+        el.style.cursor = 'pointer';
+        el.onclick = () => openStatusModal(status);
+      }
+    });
   }
 
   function showError(msg) {
@@ -617,6 +1194,13 @@
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
     if (statsData) renderTimeChart(statsData);
+  }
+
+  function switchCreationTab(mode, el) {
+    creationMode = mode;
+    el.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    if (statsData) renderCreationChart(statsData.byCreation);
   }
 
   function renderTimeChart(s) {
@@ -689,6 +1273,11 @@
           legend: {
             position: 'bottom',
             labels: { padding: 14, usePointStyle: true, pointStyleWidth: 10 },
+            onClick: (e, legendItem, legend) => {
+              // Click en leyenda abre modal
+              const statusMap = ['asiste', 'confirmado', 'reservado', 'pendiente', 'cancelado', 'no_asiste'];
+              openStatusModal(statusMap[legendItem.index]);
+            }
           },
           tooltip: {
             callbacks: {
@@ -700,6 +1289,14 @@
             },
           },
         },
+        onClick: (event, elements) => {
+          // Click en porción del gráfico abre modal
+          if (elements.length > 0) {
+            const statusMap = ['asiste', 'confirmado', 'reservado', 'pendiente', 'cancelado', 'no_asiste'];
+            const index = elements[0].index;
+            openStatusModal(statusMap[index]);
+          }
+        }
       },
     });
   }
@@ -728,7 +1325,15 @@
             position: 'bottom',
             labels: { padding: 14, usePointStyle: true, pointStyleWidth: 10 },
           },
-          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} clientes` } },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const percent = total > 0 ? Math.round((ctx.raw / total) * 100) : 0;
+                return ` ${ctx.label}: ${ctx.raw} clientes (${percent}%)`;
+              }
+            }
+          },
         },
       },
     });
@@ -737,15 +1342,21 @@
   // ── Creation chart ─────────────────────────────────────────────────────
   function renderCreationChart(byCreation) {
     if (charts.creation) charts.creation.destroy();
-    if (!byCreation || !byCreation.labels.length) return;
+
+    // Seleccionar datos según el modo activo
+    const data = creationMode === 'day' ? byCreation.day :
+                 creationMode === 'week' ? byCreation.week :
+                 byCreation.month;
+
+    if (!data || !data.labels || !data.labels.length) return;
 
     charts.creation = new Chart(document.getElementById('chart-creation'), {
       type: 'bar',
       data: {
-        labels: byCreation.labels,
+        labels: data.labels,
         datasets: [{
           label: 'Citas creadas',
-          data:  byCreation.data,
+          data:  data.data,
           backgroundColor: COLORS.blue + 'cc',
           borderColor:     COLORS.blue,
           borderWidth:     1,
@@ -770,26 +1381,410 @@
 
   // ── Services list ──────────────────────────────────────────────────────
   function renderServices(services) {
+    if (!services.length) {
+      document.getElementById('services-list').innerHTML =
+        '<p style="color:var(--muted);font-size:.85rem;padding:1rem 0">Sin datos</p>';
+      return;
+    }
+
     const max = services[0]?.count || 1;
-    document.getElementById('services-list').innerHTML = services.length
-      ? services.map(s => `
-          <div class="service-row">
-            <span class="service-name">${s.name}</span>
-            <div class="service-bar-wrap">
-              <div class="service-bar" style="width:${Math.round(s.count / max * 100)}%"></div>
+
+    // Header + Rows
+    const html = `
+      <div class="services-table">
+        <div class="services-header">
+          <div class="col-rank">#</div>
+          <div class="col-name">Servicio</div>
+          <div class="col-bar">Cantidad</div>
+          <div class="col-count">Total</div>
+          <div class="col-percent">%</div>
+        </div>
+        <div class="services-body">
+          ${services.map((s, i) => `
+            <div class="service-row">
+              <div class="col-rank">${i + 1}</div>
+              <div class="col-name">${s.name}</div>
+              <div class="col-bar">
+                <div class="service-bar-wrap">
+                  <div class="service-bar" style="width:${Math.round(s.count / max * 100)}%"></div>
+                </div>
+              </div>
+              <div class="col-count">${s.count.toLocaleString('es-CL')}</div>
+              <div class="col-percent">${s.percent}%</div>
             </div>
-            <span class="service-count">${s.count}</span>
-          </div>`).join('')
-      : '<p style="color:var(--muted);font-size:.85rem">Sin datos</p>';
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    document.getElementById('services-list').innerHTML = html;
   }
 
-  // ── Init ───────────────────────────────────────────────────────────────
-  const _now = new Date();
-  selectedYear  = _now.getFullYear();
-  selectedMonth = _now.getMonth() + 1;
+  // ── Drill-Down: Modal & Detail View ────────────────────────────────────
 
-  buildMonthSelector();
-  checkSyncThenLoad();
+  async function openStatusModal(statusType) {
+    currentStatus = statusType;
+
+    try {
+      const res = await fetch(`/api/historical/${statusType}`);
+      historicalData = await res.json();
+
+      if (!res.ok) throw new Error('Error al cargar datos');
+
+      // Actualizar título del modal
+      const titles = {
+        total: 'Total de Citas - Histórico',
+        asiste: 'Asiste - Histórico',
+        confirmado: 'Confirmado - Histórico',
+        reservado: 'Reservado - Histórico',
+        pendiente: 'Pendiente - Histórico',
+        cancelado: 'Cancelado - Histórico',
+        no_asiste: 'No Asiste - Histórico'
+      };
+
+      document.getElementById('modal-title').textContent = titles[statusType] || 'Análisis Temporal';
+
+      // Mostrar modal
+      document.getElementById('modal-overlay').classList.remove('hidden');
+
+      // Renderizar gráfica en modal
+      renderModalChart();
+
+    } catch (err) {
+      console.error('Error al cargar datos históricos:', err);
+      alert('Error al cargar datos históricos');
+    }
+  }
+
+  function renderModalChart() {
+    if (chartModal) chartModal.destroy();
+
+    const canvas = document.getElementById('chart-modal');
+    const ctx = canvas.getContext('2d');
+
+    if (historicalData.type === 'multiple') {
+      // Múltiples líneas para "Total"
+      const datasets = [
+        { label: 'Asiste', data: historicalData.datasets.asiste, borderColor: COLORS.green, backgroundColor: COLORS.green + '20' },
+        { label: 'Confirmado', data: historicalData.datasets.confirmado, borderColor: COLORS.blue, backgroundColor: COLORS.blue + '20' },
+        { label: 'Cancelado', data: historicalData.datasets.cancelado, borderColor: COLORS.red, backgroundColor: COLORS.red + '20' },
+        { label: 'No Asiste', data: historicalData.datasets.no_asiste, borderColor: COLORS.orange, backgroundColor: COLORS.orange + '20' },
+        { label: 'Reservado', data: historicalData.datasets.reservado, borderColor: COLORS.purple, backgroundColor: COLORS.purple + '20' },
+        { label: 'Pendiente', data: historicalData.datasets.pendiente, borderColor: COLORS.yellow, backgroundColor: COLORS.yellow + '20' },
+      ];
+
+      chartModal = new Chart(ctx, {
+        type: 'line',
+        data: { labels: historicalData.labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: true, position: 'top' },
+            tooltip: { mode: 'index' }
+          },
+          scales: {
+            x: { grid: { color: '#252a42' } },
+            y: { grid: { color: '#252a42' }, beginAtZero: true }
+          }
+        }
+      });
+    } else {
+      // Línea única para un estado específico
+      const colorMap = {
+        asiste: COLORS.green,
+        confirmado: COLORS.blue,
+        cancelado: COLORS.red,
+        no_asiste: COLORS.orange,
+        reservado: COLORS.purple,
+        pendiente: COLORS.yellow
+      };
+
+      const color = colorMap[historicalData.statusType] || COLORS.accent;
+
+      chartModal = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: historicalData.labels,
+          datasets: [{
+            label: 'Cantidad',
+            data: historicalData.data,
+            borderColor: color,
+            backgroundColor: color + '20',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.raw} citas`
+              }
+            }
+          },
+          scales: {
+            x: { grid: { color: '#252a42' } },
+            y: { grid: { color: '#252a42' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.add('hidden');
+    if (chartModal) {
+      chartModal.destroy();
+      chartModal = null;
+    }
+  }
+
+  function openDetailView() {
+    // Cerrar modal
+    closeModal();
+
+    // Mostrar vista detallada
+    document.getElementById('detail-view').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Actualizar título
+    const titles = {
+      total: 'Total de Citas - Análisis Temporal Completo',
+      asiste: 'Asiste - Análisis Temporal Detallado',
+      confirmado: 'Confirmado - Análisis Temporal Detallado',
+      reservado: 'Reservado - Análisis Temporal Detallado',
+      pendiente: 'Pendiente - Análisis Temporal Detallado',
+      cancelado: 'Cancelado - Análisis Temporal Detallado',
+      no_asiste: 'No Asiste - Análisis Temporal Detallado'
+    };
+
+    document.getElementById('detail-title').textContent = titles[currentStatus] || 'Análisis Temporal';
+
+    // Renderizar vista detallada
+    renderDetailView();
+  }
+
+  function renderDetailView() {
+    if (historicalData.type === 'single') {
+      // KPIs
+      document.getElementById('detail-total').textContent = historicalData.summary.total.toLocaleString('es-CL');
+      document.getElementById('detail-avg').textContent = historicalData.summary.average.toLocaleString('es-CL');
+      document.getElementById('detail-max').textContent = historicalData.summary.max.toLocaleString('es-CL');
+      document.getElementById('detail-min').textContent = historicalData.summary.min.toLocaleString('es-CL');
+      document.getElementById('detail-months').textContent = `${historicalData.summary.months} meses`;
+
+      // Gráfica detallada
+      if (chartDetail) chartDetail.destroy();
+
+      const colorMap = {
+        asiste: COLORS.green,
+        confirmado: COLORS.blue,
+        cancelado: COLORS.red,
+        no_asiste: COLORS.orange,
+        reservado: COLORS.purple,
+        pendiente: COLORS.yellow
+      };
+
+      const color = colorMap[historicalData.statusType] || COLORS.accent;
+
+      chartDetail = new Chart(document.getElementById('chart-detail'), {
+        type: 'line',
+        data: {
+          labels: historicalData.labels,
+          datasets: [{
+            label: 'Cantidad',
+            data: historicalData.data,
+            borderColor: color,
+            backgroundColor: color + '20',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 5,
+            pointHoverRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.raw} citas`
+              }
+            }
+          },
+          scales: {
+            x: { grid: { color: '#252a42' } },
+            y: { grid: { color: '#252a42' }, beginAtZero: true }
+          }
+        }
+      });
+
+      // Tabla de datos
+      let tableHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Mes</th>
+              <th>Cantidad</th>
+              <th>% del total del mes</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      historicalData.labels.forEach((label, i) => {
+        const value = historicalData.data[i];
+        const total = historicalData.totals[i];
+        const percent = total > 0 ? Math.round((value / total) * 100) : 0;
+
+        tableHTML += `
+          <tr>
+            <td><strong>${label}</strong></td>
+            <td>${value.toLocaleString('es-CL')}</td>
+            <td>${percent}%</td>
+          </tr>
+        `;
+      });
+
+      tableHTML += `
+          </tbody>
+        </table>
+      `;
+
+      document.getElementById('detail-table').innerHTML = tableHTML;
+
+    } else {
+      // Para "Total" - múltiples líneas
+      // Ocultar KPIs (no aplicables para múltiples líneas)
+      document.querySelector('.detail-kpis').style.display = 'none';
+
+      // Gráfica con múltiples líneas
+      if (chartDetail) chartDetail.destroy();
+
+      const datasets = [
+        { label: 'Asiste', data: historicalData.datasets.asiste, borderColor: COLORS.green, backgroundColor: COLORS.green + '20' },
+        { label: 'Confirmado', data: historicalData.datasets.confirmado, borderColor: COLORS.blue, backgroundColor: COLORS.blue + '20' },
+        { label: 'Cancelado', data: historicalData.datasets.cancelado, borderColor: COLORS.red, backgroundColor: COLORS.red + '20' },
+        { label: 'No Asiste', data: historicalData.datasets.no_asiste, borderColor: COLORS.orange, backgroundColor: COLORS.orange + '20' },
+        { label: 'Reservado', data: historicalData.datasets.reservado, borderColor: COLORS.purple, backgroundColor: COLORS.purple + '20' },
+        { label: 'Pendiente', data: historicalData.datasets.pendiente, borderColor: COLORS.yellow, backgroundColor: COLORS.yellow + '20' },
+      ];
+
+      chartDetail = new Chart(document.getElementById('chart-detail'), {
+        type: 'line',
+        data: { labels: historicalData.labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              onClick: (e, legendItem, legend) => {
+                const index = legendItem.datasetIndex;
+                const chart = legend.chart;
+                const meta = chart.getDatasetMeta(index);
+                meta.hidden = !meta.hidden;
+                chart.update();
+              }
+            },
+            tooltip: { mode: 'index' }
+          },
+          scales: {
+            x: { grid: { color: '#252a42' } },
+            y: { grid: { color: '#252a42' }, beginAtZero: true }
+          }
+        }
+      });
+
+      // Tabla consolidada
+      let tableHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Mes</th>
+              <th>Asiste</th>
+              <th>Confirmado</th>
+              <th>Cancelado</th>
+              <th>No Asiste</th>
+              <th>Reservado</th>
+              <th>Pendiente</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      historicalData.labels.forEach((label, i) => {
+        const total = Object.values(historicalData.datasets).reduce((sum, arr) => sum + arr[i], 0);
+
+        tableHTML += `
+          <tr>
+            <td><strong>${label}</strong></td>
+            <td>${historicalData.datasets.asiste[i].toLocaleString('es-CL')}</td>
+            <td>${historicalData.datasets.confirmado[i].toLocaleString('es-CL')}</td>
+            <td>${historicalData.datasets.cancelado[i].toLocaleString('es-CL')}</td>
+            <td>${historicalData.datasets.no_asiste[i].toLocaleString('es-CL')}</td>
+            <td>${historicalData.datasets.reservado[i].toLocaleString('es-CL')}</td>
+            <td>${historicalData.datasets.pendiente[i].toLocaleString('es-CL')}</td>
+            <td><strong>${total.toLocaleString('es-CL')}</strong></td>
+          </tr>
+        `;
+      });
+
+      tableHTML += `
+          </tbody>
+        </table>
+      `;
+
+      document.getElementById('detail-table').innerHTML = tableHTML;
+    }
+  }
+
+  function closeDetailView() {
+    document.getElementById('detail-view').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    if (chartDetail) {
+      chartDetail.destroy();
+      chartDetail = null;
+    }
+  }
+
+  // Event listeners para cerrar modal con ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+      closeDetailView();
+    }
+  });
+
+  // Click fuera del modal para cerrar
+  document.getElementById('modal-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-overlay') {
+      closeModal();
+    }
+  });
+
+  // ── Init ───────────────────────────────────────────────────────────────
+  (async function init() {
+    const _now = new Date();
+    selectedYear  = _now.getFullYear();
+    selectedMonth = _now.getMonth() + 1;
+
+    await buildMonthSelector();
+    checkSyncThenLoad();
+  })();
 </script>
 </body>
 </html>

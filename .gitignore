@@ -10,6 +10,12 @@ node_modules/
 *.log
 npm-debug.log*
 
+# Base de datos SQLite
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
 # Sistema operativo
 .DS_Store
 Thumbs.db
